@@ -49,7 +49,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="topbar">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0, flex: 1, overflow: 'hidden' }}>
         {currentPage !== 'dashboard' && (
           <button
             id="backBtn"
@@ -71,14 +71,14 @@ export const Header: React.FC<HeaderProps> = ({
         <div
           className="top-title"
           onClick={handleTitleTap}
-          style={{ cursor: 'pointer', userSelect: 'none' }}
+          style={{ cursor: 'pointer', userSelect: 'none', minWidth: 0, overflow: 'hidden' }}
           title="اضغط 5 مرات لفتح لوحة المالك"
         >
-          <h2 id="pageTitle">{pageTitle}</h2>
-          <small id="todayText">{todayText}</small>
+          <h2 id="pageTitle" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pageTitle}</h2>
+          <small id="todayText" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>{todayText}</small>
         </div>
       </div>
-      <div className="top-actions" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+      <div className="top-actions" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
         {currentUser ? (
           <button
             type="button"

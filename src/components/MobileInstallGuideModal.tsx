@@ -43,9 +43,12 @@ export const MobileInstallGuideModal: React.FC<MobileInstallGuideModalProps> = (
         alignItems: 'flex-start',
         justifyContent: 'center',
         padding: 'max(8px, env(safe-area-inset-top)) 10px max(14px, env(safe-area-inset-bottom))',
+        overflowX: 'hidden',
         overflowY: 'auto',
         WebkitOverflowScrolling: 'touch',
         direction: 'rtl',
+        width: '100%',
+        boxSizing: 'border-box',
       }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -55,9 +58,9 @@ export const MobileInstallGuideModal: React.FC<MobileInstallGuideModalProps> = (
         className="card"
         style={{
           width: '100%',
-          maxWidth: '500px',
+          maxWidth: '480px',
           maxHeight: 'calc(100dvh - 20px)',
-          margin: 'auto 0',
+          margin: 'auto',
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch',
           borderRadius: '20px',
@@ -66,6 +69,7 @@ export const MobileInstallGuideModal: React.FC<MobileInstallGuideModalProps> = (
           padding: '18px 16px',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
           border: '1px solid var(--border, #e2e8f0)',
+          boxSizing: 'border-box',
         }}
       >
         {/* Header with App Logo & Title */}

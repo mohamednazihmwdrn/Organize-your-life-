@@ -574,22 +574,22 @@ export const ReportsView: React.FC = () => {
             </div>
           ) : activeChartTab === 'comparison' ? (
             <div className="chart-touch-scroll">
-              <div style={{ width: '100%', minWidth: Math.max(340, categoryComparisonData.length * 65), height: '350px' }}>
+              <div style={{ width: '100%', maxWidth: '100%', height: '350px' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={categoryComparisonData}
-                    margin={{ top: 20, right: 20, left: 10, bottom: 40 }}
+                    margin={{ top: 20, right: 10, left: 0, bottom: 40 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.6} />
                     <XAxis
                       dataKey="category"
-                      tick={{ fill: 'var(--text)', fontSize: 11 }}
+                      tick={{ fill: 'var(--text)', fontSize: 10 }}
                       interval={0}
                       angle={-20}
                       textAnchor="end"
                     />
                     <YAxis
-                      tick={{ fill: 'var(--muted)', fontSize: 11 }}
+                      tick={{ fill: 'var(--muted)', fontSize: 10 }}
                       tickFormatter={(val) => (val >= 1000 ? `${val / 1000}k` : val)}
                     />
                     <Tooltip content={<CustomTooltip />} />
@@ -622,7 +622,7 @@ export const ReportsView: React.FC = () => {
             </div>
           ) : activeChartTab === 'expensePie' ? (
             <div className="chart-touch-scroll">
-              <div style={{ width: '100%', minWidth: '320px', height: '350px' }}>
+              <div style={{ width: '100%', maxWidth: '100%', height: '350px' }}>
                 {expensePieData.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--muted)' }}>
                     لا توجد مصروفات مسجلة في هذا الشهر.
@@ -636,8 +636,8 @@ export const ReportsView: React.FC = () => {
                         nameKey="name"
                         cx="50%"
                         cy="50%"
-                        outerRadius={110}
-                        innerRadius={50}
+                        outerRadius={105}
+                        innerRadius={45}
                         paddingAngle={3}
                         label={({ name, percent }) =>
                           `${name} (${((percent || 0) * 100).toFixed(0)}%)`
@@ -656,7 +656,7 @@ export const ReportsView: React.FC = () => {
             </div>
           ) : (
             <div className="chart-touch-scroll">
-              <div style={{ width: '100%', minWidth: '320px', height: '350px' }}>
+              <div style={{ width: '100%', maxWidth: '100%', height: '350px' }}>
                 {incomePieData.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--muted)' }}>
                     لا توجد مداخيل مسجلة في هذا الشهر.
@@ -770,7 +770,7 @@ export const ReportsView: React.FC = () => {
         </div>
 
         <div className="chart-touch-scroll" style={{ marginTop: '14px' }}>
-          <div style={{ width: '100%', minWidth: '320px', height: '280px' }}>
+          <div style={{ width: '100%', maxWidth: '100%', height: '280px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={months} margin={{ top: 10, right: 20, left: 10, bottom: 10 }}>
                 <defs>

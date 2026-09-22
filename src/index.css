@@ -24,16 +24,31 @@
   padding: 0;
 }
 
-html,
+html {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
+
 body {
   min-height: 100%;
   font-family: "Cairo", "Tajawal", Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+  position: relative;
 }
 
-body {
+#root,
+.app,
+.main,
+.content {
+  width: 100%;
+  max-width: 100%;
   overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 button,
@@ -362,13 +377,18 @@ body.dark .topbar {
 }
 
 .table-wrap {
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  width: 100%;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 620px;
+  min-width: 480px;
 }
 
 .table th,
@@ -559,9 +579,12 @@ textarea.form-control {
   display: none;
   align-items: flex-start;
   justify-content: center;
+  overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: max(8px, env(safe-area-inset-top)) 10px max(14px, env(safe-area-inset-bottom));
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .modal-backdrop.show {
@@ -571,12 +594,13 @@ textarea.form-control {
 .modal {
   width: min(620px, 100%);
   max-height: calc(100dvh - 20px);
-  margin: auto 0;
+  margin: auto;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
   background: var(--surface);
   border-radius: 20px;
   box-shadow: 0 20px 70px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
 }
 
 .modal-head {
@@ -985,23 +1009,32 @@ body.dark .onboarding {
     font-size: 18px;
   }
   .cards {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
   .stat {
     padding: 11px 12px;
     border-radius: 14px;
+    min-width: 0;
+    overflow: hidden;
   }
   .stat .label {
     font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .stat .value {
     font-size: 17px;
     margin-top: 4px;
+    word-break: break-all;
   }
   .stat .sub {
     font-size: 10px;
     margin-top: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .stat .stat-icon {
     width: 28px;
@@ -1011,11 +1044,12 @@ body.dark .onboarding {
     top: 8px;
   }
   .quick-grid {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
   .quick {
     font-size: 9px;
     padding: 9px 3px;
+    min-width: 0;
   }
   .quick span {
     font-size: 17px;
@@ -1027,10 +1061,12 @@ body.dark .onboarding {
     grid-column: auto;
   }
   .modal {
-    max-height: 92vh;
+    max-height: calc(100dvh - 20px);
+    width: 100%;
+    margin: auto;
   }
   .table {
-    min-width: 700px;
+    min-width: 460px;
   }
 }
 
@@ -1308,33 +1344,24 @@ body.dark .payment-box {
   }
   .promo-grid,
   .config-grid,
-  .owner-sections-grid {
-    grid-template-columns: 1fr;
+  .owner-sections-grid,
+  .plan-grid {
+    grid-template-columns: 1fr !important;
   }
 }
 
 /* Touch-friendly Responsive Charts & Compact Cards for Mobile */
 .chart-touch-scroll {
   width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x pan-y;
-  scrollbar-width: thin;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
   padding-bottom: 6px;
-}
-
-.chart-touch-scroll::-webkit-scrollbar {
-  height: 5px;
-}
-
-.chart-touch-scroll::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 10px;
 }
 
 @media (max-width: 640px) {
   .report-mini-cards {
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 8px !important;
   }
   .report-mini-cards .stat {
@@ -1358,20 +1385,25 @@ body.dark .payment-box {
   }
   .chart-view-selector {
     width: 100%;
-    overflow-x: auto;
-    white-space: nowrap;
+    max-width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
     padding-bottom: 4px;
-    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
   }
   .chart-view-selector button {
     padding: 6px 10px !important;
-    font-size: 10.5px !important;
+    font-size: 11px !important;
     flex-shrink: 0;
   }
   .modal {
     width: 100% !important;
+    margin: auto !important;
     border-radius: 18px !important;
     max-height: calc(100dvh - 16px) !important;
+    box-sizing: border-box !important;
   }
   .modal-head {
     padding: 13px 15px !important;

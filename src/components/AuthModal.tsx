@@ -150,17 +150,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         backdropFilter: 'blur(6px)',
         background: 'rgba(15, 23, 42, 0.65)',
         alignItems: 'flex-start',
+        justifyContent: 'center',
+        overflowX: 'hidden',
         overflowY: 'auto',
         WebkitOverflowScrolling: 'touch',
         padding: 'max(8px, env(safe-area-inset-top)) 10px max(14px, env(safe-area-inset-bottom))',
+        width: '100%',
+        boxSizing: 'border-box',
       }}
     >
       <div
         className="modal"
         style={{
-          maxWidth: '430px',
+          width: '100%',
+          maxWidth: '410px',
           maxHeight: 'calc(100dvh - 20px)',
-          margin: 'auto 0',
+          margin: 'auto',
           borderRadius: '20px',
           boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.3)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -168,6 +173,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           padding: 0,
           display: 'flex',
           flexDirection: 'column',
+          boxSizing: 'border-box',
         }}
       >
         {/* Facebook / Modern Tech Header Bar */}

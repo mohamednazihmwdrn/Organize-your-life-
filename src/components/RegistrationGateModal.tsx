@@ -150,17 +150,20 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
         alignItems: 'flex-start',
         justifyContent: 'center',
         padding: 'max(8px, env(safe-area-inset-top)) 10px max(14px, env(safe-area-inset-bottom))',
+        overflowX: 'hidden',
         overflowY: 'auto',
         WebkitOverflowScrolling: 'touch',
+        width: '100%',
+        boxSizing: 'border-box',
       }}
     >
       <div
         className="card"
         style={{
           width: '100%',
-          maxWidth: '430px',
+          maxWidth: '410px',
           maxHeight: 'calc(100dvh - 20px)',
-          margin: 'auto 0',
+          margin: 'auto',
           borderRadius: '20px',
           boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.45)',
           border: '1px solid rgba(255, 255, 255, 0.15)',
@@ -170,6 +173,7 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
           animation: 'fadeIn 0.25s ease-out',
           display: 'flex',
           flexDirection: 'column',
+          boxSizing: 'border-box',
         }}
       >
         {/* Header Banner - Compact & Mobile Optimized */}
@@ -181,6 +185,7 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
             textAlign: 'center',
             position: 'relative',
             flexShrink: 0,
+            boxSizing: 'border-box',
           }}
         >
           <div
@@ -214,6 +219,7 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
             style={{
               display: 'inline-flex',
               alignItems: 'center',
+              justifyContent: 'center',
               gap: '5px',
               background: 'rgba(255, 255, 255, 0.2)',
               padding: '3px 10px',
@@ -221,6 +227,10 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
               fontSize: '10.5px',
               fontWeight: 600,
               marginTop: '6px',
+              maxWidth: '100%',
+              boxSizing: 'border-box',
+              textAlign: 'center',
+              lineHeight: 1.4,
             }}
           >
             <span>📱</span>
@@ -238,13 +248,15 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
             borderRadius: '12px',
             border: '1px solid var(--border)',
             flexShrink: 0,
+            gap: '4px',
+            boxSizing: 'border-box',
           }}
         >
           <button
             type="button"
             style={{
               flex: 1,
-              padding: '8px 10px',
+              padding: '8px 6px',
               borderRadius: '9px',
               border: 'none',
               background: tab === 'register' ? 'var(--surface)' : 'transparent',
@@ -254,19 +266,21 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
               boxShadow: tab === 'register' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
               transition: 'all 0.18s ease',
               cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              textAlign: 'center',
             }}
             onClick={() => {
               setTab('register');
               setErrorNotice(null);
             }}
           >
-            ✍️ تسجيل لأول مرة
+            ✍️ تسجيل جديد
           </button>
           <button
             type="button"
             style={{
               flex: 1,
-              padding: '8px 10px',
+              padding: '8px 6px',
               borderRadius: '9px',
               border: 'none',
               background: tab === 'login' ? 'var(--surface)' : 'transparent',
@@ -276,13 +290,15 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
               boxShadow: tab === 'login' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
               transition: 'all 0.18s ease',
               cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              textAlign: 'center',
             }}
             onClick={() => {
               setTab('login');
               setErrorNotice(null);
             }}
           >
-            🔄 لدي حساب (استرجاع)
+            🔄 استرجاع حسابي
           </button>
         </div>
 

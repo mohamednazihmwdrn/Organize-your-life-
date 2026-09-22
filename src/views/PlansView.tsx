@@ -175,7 +175,7 @@ export const PlansView: React.FC<PlansViewProps> = ({
         <form onSubmit={handleRedeemCode} style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <input
             className="form-control"
-            style={{ flex: 1, minWidth: '220px', direction: 'ltr', letterSpacing: '1px' }}
+            style={{ flex: 1, minWidth: '160px', direction: 'ltr', letterSpacing: '1px' }}
             placeholder="مثال: MN-ABCD-EFGH-1234"
             value={activationCode}
             onChange={(e) => setActivationCode(e.target.value)}
