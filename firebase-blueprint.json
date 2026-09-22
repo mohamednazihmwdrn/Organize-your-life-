@@ -1,0 +1,250 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile settings and details",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "name"]
+    },
+    "Account": {
+      "title": "Account",
+      "description": "User financial account (cash, bank, wallet, card)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["cash", "bank", "wallet", "card"] },
+        "openingBalance": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "type", "openingBalance"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Financial income or expense transaction",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["income", "expense", "transfer"] },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "amount": { "type": "number" },
+        "date": { "type": "string" },
+        "accountId": { "type": "string" },
+        "fromAccountId": { "type": "string" },
+        "toAccountId": { "type": "string" },
+        "notes": { "type": "string" },
+        "refType": { "type": "string" },
+        "refId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "type", "title", "amount", "date", "accountId"]
+    },
+    "Debt": {
+      "title": "Debt",
+      "description": "Money owed to or by the user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "person": { "type": "string" },
+        "direction": { "type": "string", "enum": ["owe", "lent"] },
+        "amount": { "type": "number" },
+        "paidAmount": { "type": "number" },
+        "dueDate": { "type": "string" },
+        "status": { "type": "string", "enum": ["open", "paid"] },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "person", "direction", "amount"]
+    },
+    "Installment": {
+      "title": "Installment",
+      "description": "Recurring installment plan",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "provider": { "type": "string" },
+        "totalAmount": { "type": "number" },
+        "installmentAmount": { "type": "number" },
+        "totalInstallments": { "type": "number" },
+        "paidInstallments": { "type": "number" },
+        "firstDueDate": { "type": "string" },
+        "frequencyDays": { "type": "number" },
+        "accountId": { "type": "string" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "totalAmount", "installmentAmount", "totalInstallments"]
+    },
+    "Bill": {
+      "title": "Bill",
+      "description": "Utility or recurring bill",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "amount": { "type": "number" },
+        "dueDate": { "type": "string" },
+        "frequency": { "type": "string" },
+        "accountId": { "type": "string" },
+        "status": { "type": "string", "enum": ["paid", "unpaid"] },
+        "paidAt": { "type": "string" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "amount", "dueDate", "status"]
+    },
+    "Subscription": {
+      "title": "Subscription",
+      "description": "Recurring subscription service",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "amount": { "type": "number" },
+        "frequency": { "type": "string", "enum": ["شهري", "سنوي"] },
+        "renewDate": { "type": "string" },
+        "accountId": { "type": "string" },
+        "accountName": { "type": "string" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "amount", "frequency", "renewDate"]
+    },
+    "Reminder": {
+      "title": "Reminder",
+      "description": "Alert or task reminder",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "priority": { "type": "string", "enum": ["عاجل", "مهم", "عادي"] },
+        "repeat": { "type": "string" },
+        "notes": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "title", "date", "priority"]
+    },
+    "Goal": {
+      "title": "Goal",
+      "description": "Financial savings goal",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "target": { "type": "number" },
+        "current": { "type": "number" },
+        "deadline": { "type": "string" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "target", "current", "deadline"]
+    },
+    "DocumentItem": {
+      "title": "DocumentItem",
+      "description": "Uploaded warranty, contract or receipt record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "issueDate": { "type": "string" },
+        "expiryDate": { "type": "string" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "type", "issueDate", "expiryDate"]
+    },
+    "Budget": {
+      "title": "Budget",
+      "description": "Category monthly expense budget ceiling",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "category": { "type": "string" },
+        "amount": { "type": "number" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "category", "amount"]
+    },
+    "SupportTicket": {
+      "title": "SupportTicket",
+      "description": "Support or feedback inquiry sent to owner",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userContact": { "type": "string" },
+        "subject": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["open", "replied", "closed"] },
+        "reply": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "userName", "userContact", "subject", "message"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/accounts/{accountId}": {
+      "schema": "Account",
+      "description": "Private user accounts"
+    },
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Private user financial transactions"
+    },
+    "/users/{userId}/debts/{debtId}": {
+      "schema": "Debt",
+      "description": "Private user debts"
+    },
+    "/users/{userId}/installments/{installmentId}": {
+      "schema": "Installment",
+      "description": "Private user installments"
+    },
+    "/users/{userId}/bills/{billId}": {
+      "schema": "Bill",
+      "description": "Private user bills"
+    },
+    "/users/{userId}/subscriptions/{subscriptionId}": {
+      "schema": "Subscription",
+      "description": "Private user subscriptions"
+    },
+    "/users/{userId}/reminders/{reminderId}": {
+      "schema": "Reminder",
+      "description": "Private user reminders"
+    },
+    "/users/{userId}/goals/{goalId}": {
+      "schema": "Goal",
+      "description": "Private user goals"
+    },
+    "/users/{userId}/documents/{documentId}": {
+      "schema": "DocumentItem",
+      "description": "Private user documents"
+    },
+    "/users/{userId}/budgets/{budgetId}": {
+      "schema": "Budget",
+      "description": "Private user budgets"
+    },
+    "/tickets/{ticketId}": {
+      "schema": "SupportTicket",
+      "description": "System support and contact tickets"
+    },
+    "/app_config/{configId}": {
+      "schema": "UserProfile",
+      "description": "Global commercial and application configuration"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "مُنظِّم حياتك وفلوسك",
+  "description": "تطبيق كامل وإحترافي لتنظيم المال والالتزامات والأقساط والفواتير والاشتراكات مع لوحة تحكم المالك وحل مشاكل العملاء وتفعيل الاشتراكات",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
