@@ -40,9 +40,11 @@ export const MobileInstallGuideModal: React.FC<MobileInstallGuideModalProps> = (
         backdropFilter: 'blur(6px)',
         zIndex: 9999,
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '16px',
+        padding: 'max(8px, env(safe-area-inset-top)) 10px max(14px, env(safe-area-inset-bottom))',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
         direction: 'rtl',
       }}
       onClick={(e) => {
@@ -53,13 +55,15 @@ export const MobileInstallGuideModal: React.FC<MobileInstallGuideModalProps> = (
         className="card"
         style={{
           width: '100%',
-          maxWidth: '520px',
-          maxHeight: '90vh',
+          maxWidth: '500px',
+          maxHeight: 'calc(100dvh - 20px)',
+          margin: 'auto 0',
           overflowY: 'auto',
-          borderRadius: '24px',
+          WebkitOverflowScrolling: 'touch',
+          borderRadius: '20px',
           background: 'var(--card, #ffffff)',
           color: 'var(--text, #1e293b)',
-          padding: '24px',
+          padding: '18px 16px',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.35)',
           border: '1px solid var(--border, #e2e8f0)',
         }}

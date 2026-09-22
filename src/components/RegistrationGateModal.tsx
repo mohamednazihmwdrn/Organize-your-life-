@@ -147,58 +147,64 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
         background: 'rgba(15, 23, 42, 0.88)',
         backdropFilter: 'blur(8px)',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '16px',
+        padding: 'max(8px, env(safe-area-inset-top)) 10px max(14px, env(safe-area-inset-bottom))',
         overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
       }}
     >
       <div
         className="card"
         style={{
           width: '100%',
-          maxWidth: '460px',
-          borderRadius: '24px',
-          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.4)',
+          maxWidth: '430px',
+          maxHeight: 'calc(100dvh - 20px)',
+          margin: 'auto 0',
+          borderRadius: '20px',
+          boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.45)',
           border: '1px solid rgba(255, 255, 255, 0.15)',
           overflow: 'hidden',
           padding: 0,
           background: 'var(--surface)',
-          animation: 'fadeIn 0.3s ease-out',
+          animation: 'fadeIn 0.25s ease-out',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
-        {/* Header Banner */}
+        {/* Header Banner - Compact & Mobile Optimized */}
         <div
           style={{
             background: 'linear-gradient(135deg, #1877F2 0%, #0d5bb5 100%)',
-            padding: '24px 20px 20px',
+            padding: '16px 14px 12px',
             color: '#ffffff',
             textAlign: 'center',
             position: 'relative',
+            flexShrink: 0,
           }}
         >
           <div
             style={{
-              width: '56px',
-              height: '56px',
-              borderRadius: '16px',
+              width: '42px',
+              height: '42px',
+              borderRadius: '12px',
               background: '#ffffff',
               color: '#1877F2',
               display: 'grid',
               placeItems: 'center',
-              margin: '0 auto 12px',
-              fontSize: '28px',
+              margin: '0 auto 6px',
+              fontSize: '22px',
               fontWeight: 900,
-              boxShadow: '0 8px 20px rgba(0, 0, 0, 0.2)',
+              boxShadow: '0 6px 14px rgba(0, 0, 0, 0.18)',
             }}
           >
             💰
           </div>
 
-          <h2 style={{ fontSize: '20px', fontWeight: 900, margin: 0, letterSpacing: '-0.3px' }}>
+          <h2 style={{ fontSize: '17px', fontWeight: 900, margin: 0, letterSpacing: '-0.3px' }}>
             {appName || 'مُنظِّم حياتك وفلوسك'}
           </h2>
-          <p style={{ fontSize: '13px', opacity: 0.92, marginTop: '6px', marginBottom: 0, lineHeight: 1.6 }}>
+          <p style={{ fontSize: '11.5px', opacity: 0.95, marginTop: '3px', marginBottom: 0, lineHeight: 1.4 }}>
             {tab === 'register'
               ? 'تسجيل حساب حقيقي موثق لأول مرة على هذا الجهاز'
               : 'تسجيل الدخول واسترجاع بياناتك بعد تنزيل التطبيق'}
@@ -208,17 +214,17 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '6px',
-              background: 'rgba(255, 255, 255, 0.18)',
-              padding: '5px 12px',
+              gap: '5px',
+              background: 'rgba(255, 255, 255, 0.2)',
+              padding: '3px 10px',
               borderRadius: '20px',
-              fontSize: '11px',
+              fontSize: '10.5px',
               fontWeight: 600,
-              marginTop: '12px',
+              marginTop: '6px',
             }}
           >
             <span>📱</span>
-            <span>النظام يتعرف على جهازك ويحفظ بياناتك تلقائياً دون طلبها مجدداً</span>
+            <span>حفظ تلقائي لهوية هذا الجهاز دون الحاجة لإعادة التسجيل</span>
           </div>
         </div>
 
@@ -227,25 +233,26 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
           style={{
             display: 'flex',
             background: 'var(--surface2)',
-            padding: '4px',
-            margin: '16px 20px 0',
-            borderRadius: '14px',
+            padding: '3px',
+            margin: '8px 12px 0',
+            borderRadius: '12px',
             border: '1px solid var(--border)',
+            flexShrink: 0,
           }}
         >
           <button
             type="button"
             style={{
               flex: 1,
-              padding: '10px 12px',
-              borderRadius: '10px',
+              padding: '8px 10px',
+              borderRadius: '9px',
               border: 'none',
               background: tab === 'register' ? 'var(--surface)' : 'transparent',
               color: tab === 'register' ? '#1877F2' : 'var(--muted)',
               fontWeight: tab === 'register' ? 800 : 600,
-              fontSize: '13px',
-              boxShadow: tab === 'register' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
-              transition: 'all 0.2s ease',
+              fontSize: '12px',
+              boxShadow: tab === 'register' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
+              transition: 'all 0.18s ease',
               cursor: 'pointer',
             }}
             onClick={() => {
@@ -259,15 +266,15 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
             type="button"
             style={{
               flex: 1,
-              padding: '10px 12px',
-              borderRadius: '10px',
+              padding: '8px 10px',
+              borderRadius: '9px',
               border: 'none',
               background: tab === 'login' ? 'var(--surface)' : 'transparent',
               color: tab === 'login' ? '#1877F2' : 'var(--muted)',
               fontWeight: tab === 'login' ? 800 : 600,
-              fontSize: '13px',
-              boxShadow: tab === 'login' ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
-              transition: 'all 0.2s ease',
+              fontSize: '12px',
+              boxShadow: tab === 'login' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
+              transition: 'all 0.18s ease',
               cursor: 'pointer',
             }}
             onClick={() => {
@@ -279,8 +286,15 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
           </button>
         </div>
 
-        {/* Modal Form Body */}
-        <div style={{ padding: '16px 20px 24px' }}>
+        {/* Modal Form Body - Internal Smooth Scrolling */}
+        <div
+          style={{
+            padding: '12px 14px 16px',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            flex: 1,
+          }}
+        >
           {/* Error Notice */}
           {errorNotice && (
             <div
@@ -288,14 +302,14 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
                 background: 'rgba(239, 68, 68, 0.1)',
                 border: '1px solid rgba(239, 68, 68, 0.3)',
                 color: '#ef4444',
-                padding: '10px 14px',
-                borderRadius: '12px',
-                fontSize: '12.5px',
+                padding: '8px 12px',
+                borderRadius: '10px',
+                fontSize: '11.5px',
                 fontWeight: 600,
-                marginBottom: '16px',
+                marginBottom: '10px',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '6px',
               }}
             >
               <span>⚠️</span>
@@ -306,8 +320,8 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
           {tab === 'register' ? (
             /* Registration Form */
             <form onSubmit={handleRegister}>
-              <div className="form-group" style={{ marginBottom: '14px' }}>
-                <label style={{ fontSize: '12.5px', fontWeight: 700, marginBottom: '6px', display: 'block' }}>
+              <div className="form-group" style={{ marginBottom: '10px' }}>
+                <label style={{ fontSize: '11.5px', fontWeight: 700, marginBottom: '4px', display: 'block' }}>
                   اسمك الكريم (الاسم الأول واسم العائلة) <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <input
@@ -316,9 +330,9 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
                   placeholder="مثال: محمد أحمد علي"
                   className="form-control"
                   style={{
-                    padding: '12px 14px',
-                    borderRadius: '12px',
-                    fontSize: '13.5px',
+                    padding: '10px 12px',
+                    borderRadius: '10px',
+                    fontSize: '13px',
                     border: '1.5px solid var(--border)',
                   }}
                   value={name}
@@ -326,8 +340,8 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
                 />
               </div>
 
-              <div className="form-group" style={{ marginBottom: '14px' }}>
-                <label style={{ fontSize: '12.5px', fontWeight: 700, marginBottom: '6px', display: 'block' }}>
+              <div className="form-group" style={{ marginBottom: '10px' }}>
+                <label style={{ fontSize: '11.5px', fontWeight: 700, marginBottom: '4px', display: 'block' }}>
                   رقم هاتفك المحمول <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <input
@@ -338,21 +352,21 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
                   style={{
                     direction: 'ltr',
                     textAlign: 'right',
-                    padding: '12px 14px',
-                    borderRadius: '12px',
-                    fontSize: '13.5px',
+                    padding: '10px 12px',
+                    borderRadius: '10px',
+                    fontSize: '13px',
                     border: '1.5px solid var(--border)',
                   }}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />
-                <span style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px', display: 'block' }}>
+                <span style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '2px', display: 'block' }}>
                   يُستخدم رقم هاتفك كمعرّف أساسي لحسابك واسترجاع بياناتك عند الحاجة.
                 </span>
               </div>
 
-              <div className="form-group" style={{ marginBottom: '14px' }}>
-                <label style={{ fontSize: '12.5px', fontWeight: 700, marginBottom: '6px', display: 'block' }}>
+              <div className="form-group" style={{ marginBottom: '10px' }}>
+                <label style={{ fontSize: '11.5px', fontWeight: 700, marginBottom: '4px', display: 'block' }}>
                   كلمة المرور / الرمز السري للحساب <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <div style={{ position: 'relative' }}>
@@ -363,9 +377,9 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
                     className="form-control"
                     style={{
                       direction: 'ltr',
-                      padding: '12px 42px 12px 14px',
-                      borderRadius: '12px',
-                      fontSize: '13.5px',
+                      padding: '10px 38px 10px 12px',
+                      borderRadius: '10px',
+                      fontSize: '13px',
                       border: '1.5px solid var(--border)',
                     }}
                     value={password}
@@ -375,13 +389,13 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
                     type="button"
                     style={{
                       position: 'absolute',
-                      right: '10px',
+                      right: '8px',
                       top: '50%',
                       transform: 'translateY(-50%)',
                       background: 'none',
                       border: 'none',
                       color: 'var(--muted)',
-                      fontSize: '15px',
+                      fontSize: '14px',
                       cursor: 'pointer',
                       padding: '4px',
                     }}
@@ -393,8 +407,8 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
                 </div>
               </div>
 
-              <div className="form-group" style={{ marginBottom: '16px' }}>
-                <label style={{ fontSize: '12.5px', fontWeight: 700, marginBottom: '6px', display: 'block' }}>
+              <div className="form-group" style={{ marginBottom: '12px' }}>
+                <label style={{ fontSize: '11.5px', fontWeight: 700, marginBottom: '4px', display: 'block' }}>
                   تأكيد كلمة المرور <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <input
@@ -404,9 +418,9 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
                   className="form-control"
                   style={{
                     direction: 'ltr',
-                    padding: '12px 14px',
-                    borderRadius: '12px',
-                    fontSize: '13.5px',
+                    padding: '10px 12px',
+                    borderRadius: '10px',
+                    fontSize: '13px',
                     border: '1.5px solid var(--border)',
                   }}
                   value={confirmPassword}
@@ -417,16 +431,16 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
               <div
                 style={{
                   background: 'var(--surface2)',
-                  padding: '10px 14px',
-                  borderRadius: '12px',
-                  fontSize: '11.5px',
+                  padding: '8px 10px',
+                  borderRadius: '10px',
+                  fontSize: '10.5px',
                   color: 'var(--text)',
-                  marginBottom: '16px',
-                  lineHeight: 1.6,
+                  marginBottom: '12px',
+                  lineHeight: 1.5,
                   border: '1px solid var(--border)',
                 }}
               >
-                🔒 <strong>تأكيد تلقائي:</strong> بمجرد التسجيل الآن، سيحفظ النظام بياناتك على هذا الجهاز وسيتعرف عليك دائماً كصاحب الجهاز بدون طلب التسجيل مجدداً.
+                🔒 <strong>تأكيد تلقائي:</strong> سيحفظ النظام بياناتك على هذا الجهاز وسيتعرف عليك دائماً كصاحب الجهاز دون طلب التسجيل مجدداً.
               </div>
 
               <button
@@ -434,19 +448,19 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
                 className="btn"
                 style={{
                   width: '100%',
-                  padding: '13px',
-                  borderRadius: '12px',
+                  padding: '11px',
+                  borderRadius: '10px',
                   fontWeight: 800,
-                  fontSize: '14.5px',
+                  fontSize: '13.5px',
                   background: 'linear-gradient(135deg, #1877F2 0%, #0d5bb5 100%)',
                   color: '#ffffff',
                   border: 'none',
-                  boxShadow: '0 4px 14px rgba(24, 119, 242, 0.35)',
+                  boxShadow: '0 4px 12px rgba(24, 119, 242, 0.35)',
                   cursor: loading ? 'wait' : 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '8px',
+                  gap: '6px',
                 }}
                 disabled={loading}
               >
@@ -461,18 +475,18 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
                   background: 'rgba(24, 119, 242, 0.08)',
                   border: '1px solid rgba(24, 119, 242, 0.2)',
                   color: 'var(--text)',
-                  padding: '11px 14px',
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                  marginBottom: '16px',
-                  lineHeight: 1.6,
+                  padding: '9px 12px',
+                  borderRadius: '10px',
+                  fontSize: '11.5px',
+                  marginBottom: '12px',
+                  lineHeight: 1.5,
                 }}
               >
-                💡 <strong>استرجاع الحساب:</strong> إذا قمت بحذف التطبيق وتنزيله مجدداً، أدخل رقم هاتفك المسجل وكلمة المرور وسيقوم النظام فوراً باسترجاع كافة حساباتك ومصاريفك وديونك المحفوظة.
+                💡 <strong>استرجاع الحساب:</strong> أدخل رقم هاتفك المسجل وكلمة المرور وسيقوم النظام فوراً باسترجاع كافة حساباتك ومصاريفك وديونك المحفوظة.
               </div>
 
-              <div className="form-group" style={{ marginBottom: '14px' }}>
-                <label style={{ fontSize: '12.5px', fontWeight: 700, marginBottom: '6px', display: 'block' }}>
+              <div className="form-group" style={{ marginBottom: '10px' }}>
+                <label style={{ fontSize: '11.5px', fontWeight: 700, marginBottom: '4px', display: 'block' }}>
                   رقم هاتفك المسجل <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <input
@@ -483,9 +497,9 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
                   style={{
                     direction: 'ltr',
                     textAlign: 'right',
-                    padding: '12px 14px',
-                    borderRadius: '12px',
-                    fontSize: '13.5px',
+                    padding: '10px 12px',
+                    borderRadius: '10px',
+                    fontSize: '13px',
                     border: '1.5px solid var(--border)',
                   }}
                   value={phone}
@@ -493,8 +507,8 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
                 />
               </div>
 
-              <div className="form-group" style={{ marginBottom: '16px' }}>
-                <label style={{ fontSize: '12.5px', fontWeight: 700, marginBottom: '6px', display: 'block' }}>
+              <div className="form-group" style={{ marginBottom: '12px' }}>
+                <label style={{ fontSize: '11.5px', fontWeight: 700, marginBottom: '4px', display: 'block' }}>
                   كلمة المرور / الرمز السري <span style={{ color: '#ef4444' }}>*</span>
                 </label>
                 <div style={{ position: 'relative' }}>
@@ -505,9 +519,9 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
                     className="form-control"
                     style={{
                       direction: 'ltr',
-                      padding: '12px 42px 12px 14px',
-                      borderRadius: '12px',
-                      fontSize: '13.5px',
+                      padding: '10px 38px 10px 12px',
+                      borderRadius: '10px',
+                      fontSize: '13px',
                       border: '1.5px solid var(--border)',
                     }}
                     value={password}
@@ -517,13 +531,13 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
                     type="button"
                     style={{
                       position: 'absolute',
-                      right: '10px',
+                      right: '8px',
                       top: '50%',
                       transform: 'translateY(-50%)',
                       background: 'none',
                       border: 'none',
                       color: 'var(--muted)',
-                      fontSize: '15px',
+                      fontSize: '14px',
                       cursor: 'pointer',
                       padding: '4px',
                     }}
@@ -540,19 +554,19 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
                 className="btn"
                 style={{
                   width: '100%',
-                  padding: '13px',
-                  borderRadius: '12px',
+                  padding: '11px',
+                  borderRadius: '10px',
                   fontWeight: 800,
-                  fontSize: '14.5px',
+                  fontSize: '13.5px',
                   background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                   color: '#ffffff',
                   border: 'none',
-                  boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.35)',
                   cursor: loading ? 'wait' : 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '8px',
+                  gap: '6px',
                 }}
                 disabled={loading}
               >
@@ -566,12 +580,12 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
             style={{
               display: 'flex',
               alignItems: 'center',
-              margin: '18px 0 12px',
-              gap: '12px',
+              margin: '12px 0 8px',
+              gap: '10px',
             }}
           >
             <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-            <span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: 600 }}>
+            <span style={{ fontSize: '10.5px', color: 'var(--muted)', fontWeight: 600 }}>
               أو خيار الدخول بحساب Google
             </span>
             <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
@@ -585,11 +599,11 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '10px',
-              padding: '11px',
-              borderRadius: '12px',
+              gap: '8px',
+              padding: '9px 12px',
+              borderRadius: '10px',
               fontWeight: 700,
-              fontSize: '13px',
+              fontSize: '12px',
               background: 'var(--surface)',
               color: 'var(--text)',
               border: '1px solid var(--border)',
@@ -597,7 +611,7 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
             onClick={handleGoogleSignIn}
             disabled={loading}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24">
+            <svg width="16" height="16" viewBox="0 0 24 24">
               <path
                 fill="#4285F4"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

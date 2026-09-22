@@ -143,26 +143,42 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="modal-backdrop show" style={{ zIndex: 500, backdropFilter: 'blur(6px)', background: 'rgba(15, 23, 42, 0.65)' }}>
+    <div
+      className="modal-backdrop show"
+      style={{
+        zIndex: 500,
+        backdropFilter: 'blur(6px)',
+        background: 'rgba(15, 23, 42, 0.65)',
+        alignItems: 'flex-start',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        padding: 'max(8px, env(safe-area-inset-top)) 10px max(14px, env(safe-area-inset-bottom))',
+      }}
+    >
       <div
         className="modal"
         style={{
-          maxWidth: '460px',
-          borderRadius: '24px',
+          maxWidth: '430px',
+          maxHeight: 'calc(100dvh - 20px)',
+          margin: 'auto 0',
+          borderRadius: '20px',
           boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.3)',
           border: '1px solid rgba(255, 255, 255, 0.1)',
           overflow: 'hidden',
           padding: 0,
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         {/* Facebook / Modern Tech Header Bar */}
         <div
           style={{
             background: 'linear-gradient(135deg, #1877F2 0%, #0c5dc7 100%)',
-            padding: '24px 20px 20px',
+            padding: '16px 14px 12px',
             color: '#ffffff',
             textAlign: 'center',
             position: 'relative',
+            flexShrink: 0,
           }}
         >
           <button
@@ -171,14 +187,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             onClick={onClose}
             style={{
               position: 'absolute',
-              top: '16px',
-              left: '16px',
+              top: '12px',
+              left: '12px',
               color: '#ffffff',
               background: 'rgba(255, 255, 255, 0.2)',
               border: 'none',
               borderRadius: '50%',
-              width: '32px',
-              height: '32px',
+              width: '30px',
+              height: '30px',
               display: 'grid',
               placeItems: 'center',
               fontSize: '18px',
@@ -189,28 +205,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           <div
             style={{
-              width: '52px',
-              height: '52px',
-              borderRadius: '16px',
+              width: '42px',
+              height: '42px',
+              borderRadius: '12px',
               background: '#ffffff',
               color: '#1877F2',
               display: 'grid',
               placeItems: 'center',
-              margin: '0 auto 12px',
-              fontSize: '26px',
+              margin: '0 auto 6px',
+              fontSize: '22px',
               fontWeight: 900,
-              boxShadow: '0 8px 16px rgba(0, 0, 0, 0.15)',
+              boxShadow: '0 6px 14px rgba(0, 0, 0, 0.15)',
             }}
           >
             💰
           </div>
 
-          <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, letterSpacing: '-0.3px' }}>
+          <h3 style={{ fontSize: '16.5px', fontWeight: 800, margin: 0, letterSpacing: '-0.3px' }}>
             {mode === 'login' && 'تسجيل الدخول إلى حسابك'}
             {mode === 'register' && 'إنشاء حساب عميل جديد'}
             {mode === 'forgot' && 'العثور على حسابك واستعادته'}
           </h3>
-          <p style={{ fontSize: '12px', opacity: 0.9, marginTop: '4px', marginBottom: 0 }}>
+          <p style={{ fontSize: '11px', opacity: 0.9, marginTop: '3px', marginBottom: 0 }}>
             {mode === 'login' && 'سجل الدخول لمزامنة أموالك والوصول إليها من كل أجهزتك'}
             {mode === 'register' && 'بياناتك المالية مشفرة وخاصة بك بالكامل'}
             {mode === 'forgot' && 'أدخل بريدك الإلكتروني لإرسال رابط تعيين كلمة السر'}
@@ -220,17 +236,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '5px',
+              gap: '4px',
               background: 'rgba(255, 255, 255, 0.18)',
-              padding: '4px 10px',
+              padding: '3px 8px',
               borderRadius: '20px',
               fontSize: '10px',
               fontWeight: 600,
-              marginTop: '12px',
+              marginTop: '6px',
             }}
           >
             <span>🔒</span>
-            <span>نظام سحابي محمي بتشفير 256-bit (أونلاين وأوفلاين)</span>
+            <span>نظام سحابي محمي بتشفير 256-bit</span>
           </div>
         </div>
 
