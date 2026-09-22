@@ -1,0 +1,35 @@
+{
+  "id": "/",
+  "name": "مُنظِّم حياتك وفلوسك",
+  "short_name": "منظم الفلوس",
+  "description": "تطبيق متكامل لتنظيم الأموال والميزانيات والديون والأقساط والفواتير والاشتراكات السحابية والشخصية.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1e3a8a",
+  "background_color": "#0f172a",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["finance", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

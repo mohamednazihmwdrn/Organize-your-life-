@@ -14,6 +14,7 @@ interface HeaderProps {
   onQuickAdd: () => void;
   onOpenAuthModal: () => void;
   onOwnerTapTrigger: () => void;
+  onOpenInstallModal?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -28,6 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
   onQuickAdd,
   onOpenAuthModal,
   onOwnerTapTrigger,
+  onOpenInstallModal,
 }) => {
   const tapCountRef = useRef(0);
   const tapTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -116,6 +118,17 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onOpenAuthModal}
           >
             دخول / تسجيل
+          </button>
+        )}
+        {onOpenInstallModal && (
+          <button
+            type="button"
+            className="icon-btn"
+            title="تثبيت التطبيق على الهاتف"
+            onClick={onOpenInstallModal}
+            style={{ color: '#2563eb', fontWeight: 800 }}
+          >
+            📲
           </button>
         )}
         <button

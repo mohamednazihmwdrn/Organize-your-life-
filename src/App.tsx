@@ -45,6 +45,7 @@ import { PinOverlay } from './components/PinOverlay';
 import { OnboardingModal } from './components/OnboardingModal';
 import { RegistrationGateModal } from './components/RegistrationGateModal';
 import { AuthModal } from './components/AuthModal';
+import { MobileInstallGuideModal } from './components/MobileInstallGuideModal';
 
 // Views
 import { DashboardView } from './views/DashboardView';
@@ -111,6 +112,7 @@ export default function App() {
   );
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showAuthModal, setShowAuthModal] = useState<boolean>(false);
+  const [showInstallModal, setShowInstallModal] = useState<boolean>(false);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -1155,6 +1157,7 @@ export default function App() {
             onShowToast={showToast}
             onReportIssue={handleOpenReportIssueModal}
             onRefreshData={triggerRefresh}
+            onOpenInstallModal={() => setShowInstallModal(true)}
           />
         );
       case 'owner':
@@ -1205,6 +1208,7 @@ export default function App() {
         onOwnerTapTrigger={handleOpenOwnerLogin}
         onOpenAuthModal={() => setShowAuthModal(true)}
         onLogout={handleLogout}
+        onOpenInstallModal={() => setShowInstallModal(true)}
       />
 
       <main className="main">
@@ -1225,6 +1229,7 @@ export default function App() {
           onQuickAdd={() => setModalState({ type: 'quickAdd' })}
           onOpenAuthModal={() => setShowAuthModal(true)}
           onOwnerTapTrigger={handleOpenOwnerLogin}
+          onOpenInstallModal={() => setShowInstallModal(true)}
         />
 
         <section id="content" className="content">
@@ -2433,6 +2438,13 @@ export default function App() {
           triggerRefresh();
         }}
         onShowToast={showToast}
+      />
+
+      {/* Mobile Install Guide Modal */}
+      <MobileInstallGuideModal
+        show={showInstallModal}
+        onClose={() => setShowInstallModal(false)}
+        appName={commercialConfig.name}
       />
     </div>
   );

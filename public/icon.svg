@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="50%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+  <!-- Background squircle -->
+  <rect width="512" height="512" rx="128" fill="url(#bg)"/>
+  
+  <!-- Outer glowing ring -->
+  <circle cx="256" cy="256" r="180" stroke="rgba(255,255,255,0.15)" stroke-width="8" stroke-dasharray="16 12"/>
+  
+  <!-- Wallet / Vault Base -->
+  <rect x="136" y="160" width="240" height="192" rx="36" fill="url(#emerald)" filter="drop-shadow(0 12px 24px rgba(0,0,0,0.3))"/>
+  
+  <!-- Wallet Flap -->
+  <path d="M136 196 C136 176 152 160 172 160 L340 160 C360 160 376 176 376 196 L376 220 C376 230 368 238 358 238 L154 238 C144 238 136 230 136 220 Z" fill="#047857"/>
+  
+  <!-- Golden Coin -->
+  <circle cx="316" cy="256" r="44" fill="url(#gold)" stroke="#ffffff" stroke-width="4" filter="drop-shadow(0 6px 12px rgba(0,0,0,0.25))"/>
+  <circle cx="316" cy="256" r="34" fill="none" stroke="#b45309" stroke-width="3" stroke-dasharray="6 4"/>
+  <text x="316" y="268" font-family="Arial, sans-serif" font-weight="900" font-size="34" fill="#78350f" text-anchor="middle">ج</text>
+  
+  <!-- Growth Arrow -->
+  <path d="M176 300 L216 260 L248 292 L300 240" stroke="#ffffff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M280 240 L300 240 L300 260" stroke="#ffffff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Life star sparkle -->
+  <path d="M220 130 Q220 144 206 144 Q220 144 220 158 Q220 144 234 144 Q220 144 220 130 Z" fill="#fde047"/>
+</svg>

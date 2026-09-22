@@ -23,6 +23,7 @@ interface SettingsViewProps {
   onShowToast: (msg: string, type?: 'success' | 'error' | 'warning' | 'info') => void;
   onReportIssue: () => void;
   onRefreshData: () => void;
+  onOpenInstallModal?: () => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -39,6 +40,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   onShowToast,
   onReportIssue,
   onRefreshData,
+  onOpenInstallModal,
 }) => {
   const [nameInput, setNameInput] = useState(userName);
   const [currencyInput, setCurrencyInput] = useState(
@@ -167,6 +169,97 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
       </div>
 
       <div className="settings-grid">
+        {/* Mobile App Installation & APK */}
+        <div
+          className="card panel"
+          style={{
+            gridColumn: '1 / -1',
+            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.07), rgba(16, 185, 129, 0.07))',
+            border: '1.5px solid rgba(37, 99, 235, 0.3)',
+            borderRadius: '18px',
+          }}
+        >
+          <div className="panel-head" style={{ borderBottom: '1px solid rgba(37, 99, 235, 0.15)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  background: '#1e3a8a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid #2563eb',
+                }}
+              >
+                <img
+                  src="/pwa-192x192.png"
+                  alt="شعار التطبيق"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/icon.svg';
+                  }}
+                />
+              </div>
+              <div>
+                <h4 style={{ margin: 0, fontSize: '15px', color: '#1e293b' }}>
+                  📱 تحميل وتثبيت التطبيق على الهاتف (Android / iPhone / APK)
+                </h4>
+                <small style={{ color: 'var(--muted)' }}>
+                  شعار التطبيق الرسمي، تشغيل بدون شريط متصفح، وأيقونة على الشاشة الرئيسية
+                </small>
+              </div>
+            </div>
+            <span className="badge badge-success">جاهز للتثبيت 100%</span>
+          </div>
+          <div style={{ padding: '16px 0 0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <p style={{ margin: 0, fontSize: '13px', lineHeight: 1.7, color: 'var(--text)' }}>
+              يمكنك تشغيل هذا التطبيق على هاتفك المحمول كـ <strong>تطبيق حقيقي ومستقل تماماً</strong>، بأيقونته وشعاره الخاص وسرعة فائقة بدون شريط عنوان المتصفح. كما يمكنك تحويله إلى ملف <strong>APK</strong> بنقرة واحدة.
+            </p>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+              {onOpenInstallModal && (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={onOpenInstallModal}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '10px 18px',
+                    fontSize: '13.5px',
+                    fontWeight: 800,
+                    borderRadius: '10px',
+                  }}
+                >
+                  <span>📲</span>
+                  <span>فتح دليل التثبيت وتحميل الـ APK</span>
+                </button>
+              )}
+              <a
+                href="https://www.pwabuilder.com"
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-outline"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 18px',
+                  fontSize: '13.5px',
+                  fontWeight: 700,
+                  borderRadius: '10px',
+                }}
+              >
+                <span>📦</span>
+                <span>توليد ملف APK عبر PWABuilder</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
         {/* Cloud Account & User Profile */}
         <div className="card panel" style={{ border: currentUser ? '1px solid #10b981' : '1px solid var(--border)' }}>
           <div className="panel-head">

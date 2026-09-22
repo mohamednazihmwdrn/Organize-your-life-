@@ -69,9 +69,12 @@ export function openIndexedDB(): Promise<IDBDatabase> {
   });
 }
 
-// Check if user is currently authenticated
+// Check if user is currently authenticated or registered on this device
 export function getCurrentUserId(): string | null {
-  return auth.currentUser ? auth.currentUser.uid : null;
+  if (auth.currentUser) return auth.currentUser.uid;
+  const localUid = localStorage.getItem('plm_user_uid');
+  if (localUid) return localUid;
+  return null;
 }
 
 // Fetch all documents from a store (either from user's isolated Firestore subcollection or local IndexedDB)

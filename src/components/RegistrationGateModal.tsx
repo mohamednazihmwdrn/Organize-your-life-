@@ -67,11 +67,11 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
       onSuccess(cleanName, phone.trim());
     } catch (err: any) {
       console.error(err);
-      if (err.code === 'auth/email-already-in-use') {
-        setErrorNotice('رقم الهاتف هذا مسجل بالفعل مسبقاً! انتقل لتبويب "تسجيل الدخول / استرجاع الحساب"');
+      if (err.code === 'auth/email-already-in-use' || (err.message && err.message.includes('مسجل بالفعل'))) {
+        setErrorNotice('رقم الهاتف هذا مسجل بالفعل مسبقاً! تم تحويلك لتبويب استرجاع الحساب والدخول');
         setTab('login');
       } else {
-        setErrorNotice(err.message || 'تعذر إنشاء الحساب، يرجى التحقق من اتصال الإنترنت');
+        setErrorNotice(err.message || 'تعذر إنشاء الحساب، يرجى التحقق من صحة البيانات والاتصال بالإنترنت');
       }
     } finally {
       setLoading(false);
@@ -83,7 +83,7 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
     setErrorNotice(null);
 
     const normPhone = normalizePhone(phone);
-    if (!normPhone || normPhone.length < 8) {
+    if (!normPhone || normPhone.length < 7) {
       setErrorNotice('يرجى إدخال رقم الهاتف المسجل به حسابك');
       return;
     }
@@ -106,11 +106,12 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
       if (
         err.code === 'auth/user-not-found' ||
         err.code === 'auth/wrong-password' ||
-        err.code === 'auth/invalid-credential'
+        err.code === 'auth/invalid-credential' ||
+        (err.message && err.message.includes('غير صحيحة'))
       ) {
-        setErrorNotice('بيانات الدخول غير صحيحة! تأكد من رقم الهاتف المسجل وكلمة المرور.');
+        setErrorNotice(err.message || 'بيانات الدخول غير صحيحة! تأكد من رقم الهاتف المسجل وكلمة المرور.');
       } else {
-        setErrorNotice('تعذر الدخول، يرجى التحقق من اتصال الإنترنت وإعادة المحاولة.');
+        setErrorNotice(err.message || 'تعذر الدخول، يرجى التحقق من اتصال الإنترنت وإعادة المحاولة.');
       }
     } finally {
       setLoading(false);

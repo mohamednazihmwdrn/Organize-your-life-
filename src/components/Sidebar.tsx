@@ -13,6 +13,7 @@ interface SidebarProps {
   onOwnerTapTrigger: () => void;
   onOpenAuthModal: () => void;
   onLogout: () => void;
+  onOpenInstallModal?: () => void;
 }
 
 const NAV_ITEMS: { id: PageId; icon: string; label: string }[] = [
@@ -43,6 +44,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOwnerTapTrigger,
   onOpenAuthModal,
   onLogout,
+  onOpenInstallModal,
 }) => {
   const tapCountRef = useRef(0);
   const tapTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -76,7 +78,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
           style={{ cursor: 'pointer', userSelect: 'none' }}
           title="اضغط 5 مرات لفتح لوحة المالك"
         >
-          <div className="brand-icon">💰</div>
+          <div className="brand-icon" style={{ padding: 0, overflow: 'hidden', background: '#1e3a8a' }}>
+            <img
+              src="/pwa-192x192.png"
+              alt="لوجو"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '10px' }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/icon.svg';
+              }}
+            />
+          </div>
           <div>
             <h1 id="brandOwnerTrigger">
               {config.name || 'مُنظِّم حياتك وفلوسك'}
@@ -84,6 +95,35 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <small>Personal Life Manager V2</small>
           </div>
         </div>
+
+        {onOpenInstallModal && (
+          <div style={{ padding: '0 12px 8px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onOpenInstallModal();
+              }}
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: '12px',
+                border: '1px solid rgba(37, 99, 235, 0.3)',
+                background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(16, 185, 129, 0.12))',
+                color: 'var(--primary, #2563eb)',
+                fontWeight: 800,
+                fontSize: '12.5px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                cursor: 'pointer',
+              }}
+            >
+              <span style={{ fontSize: '16px' }}>📲</span>
+              <span>تثبيت التطبيق على هاتفك</span>
+            </button>
+          </div>
+        )}
 
         <nav className="nav">
           {NAV_ITEMS.map((item) => {
