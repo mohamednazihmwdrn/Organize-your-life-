@@ -37,15 +37,20 @@ export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
 // Initialize Firestore with robust multi-tab offline persistence
+const firestoreDbId = (firebaseConfig as any).firestoreDatabaseId;
 let db: Firestore;
 try {
-  db = initializeFirestore(app, {
-    localCache: persistentLocalCache({
-      tabManager: persistentMultipleTabManager(),
-    }),
-  });
+  db = initializeFirestore(
+    app,
+    {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+      }),
+    },
+    firestoreDbId
+  );
 } catch (e) {
-  db = getFirestore(app);
+  db = firestoreDbId ? getFirestore(app, firestoreDbId) : getFirestore(app);
 }
 
 export { db };
@@ -127,7 +132,17 @@ export function onAuthChange(callback: (user: any | null) => void) {
   };
 }
 
-// Secure SHA-256 password hash (works on all modern mobile and desktop browsers)
+// Fallback fast hash
+export function fallbackHash(pass: string): string {
+  let hash = 0;
+  for (let i = 0; i < pass.length; i++) {
+    hash = (hash << 5) - hash + pass.charCodeAt(i);
+    hash |= 0;
+  }
+  return `h_${Math.abs(hash)}`;
+}
+
+// Secure SHA-256 password hash (works across modern mobile & desktop browsers)
 export async function hashPassword(pass: string): Promise<string> {
   try {
     if (typeof crypto !== 'undefined' && crypto?.subtle) {
@@ -140,12 +155,18 @@ export async function hashPassword(pass: string): Promise<string> {
   } catch (e) {
     console.warn('Crypto subtle unavailable, using fallback hash:', e);
   }
-  let hash = 0;
-  for (let i = 0; i < pass.length; i++) {
-    hash = (hash << 5) - hash + pass.charCodeAt(i);
-    hash |= 0;
-  }
-  return `h_${Math.abs(hash)}`;
+  return fallbackHash(pass);
+}
+
+// Robust password verification supporting multiple hash types & fallbacks
+export async function verifyPasswordMatch(pass: string, storedHash?: string): Promise<boolean> {
+  if (!storedHash) return false;
+  if (storedHash === pass) return true;
+  const primaryHash = await hashPassword(pass);
+  if (storedHash === primaryHash) return true;
+  const fHash = fallbackHash(pass);
+  if (storedHash === fHash) return true;
+  return false;
 }
 
 // Phone Number Normalization (converts Arabic digits to Western digits, strips formatting)
@@ -165,6 +186,37 @@ export function normalizePhone(phone: string): string {
   return cleaned;
 }
 
+// Generate all candidate variations of a phone number to guarantee lookup match
+export function getPhoneCandidates(phone: string): string[] {
+  const norm = normalizePhone(phone);
+  if (!norm) return [];
+
+  const set = new Set<string>();
+  set.add(norm);
+
+  // If starts with 20 (Egypt country code)
+  if (norm.startsWith('20') && norm.length >= 11) {
+    const without20 = norm.substring(2);
+    set.add(without20);
+    set.add('0' + without20);
+  }
+
+  // If starts with 0
+  if (norm.startsWith('0') && norm.length >= 10) {
+    const without0 = norm.substring(1);
+    set.add(without0);
+    set.add('20' + without0);
+  }
+
+  // If 10 digits starting with 1 (Egyptian mobile without leading 0)
+  if (norm.length === 10 && norm.startsWith('1')) {
+    set.add('0' + norm);
+    set.add('20' + norm);
+  }
+
+  return Array.from(set);
+}
+
 // Convert normalized phone number to internal Firebase Auth email
 export function phoneToAuthEmail(phone: string): string {
   const norm = normalizePhone(phone);
@@ -173,7 +225,9 @@ export function phoneToAuthEmail(phone: string): string {
 
 // Register with Phone Number, Name, and Security Password/PIN
 export async function registerWithPhone(name: string, phone: string, pass: string): Promise<AppAuthUser> {
-  const normPhone = normalizePhone(phone);
+  const cleanPhone = phone.trim();
+  const candidates = getPhoneCandidates(cleanPhone);
+  const normPhone = candidates[0];
   if (!normPhone || normPhone.length < 7) {
     throw new Error('يرجى إدخال رقم هاتف صحيح مكون من 7 أرقام على الأقل');
   }
@@ -181,61 +235,67 @@ export async function registerWithPhone(name: string, phone: string, pass: strin
   if (!cleanName) {
     throw new Error('يرجى إدخال اسمك الكريم');
   }
-  if (!pass || pass.length < 6) {
+  const cleanPass = pass.trim();
+  if (!cleanPass || cleanPass.length < 6) {
     throw new Error('كلمة المرور / الرمز السري يجب أن تكون 6 أحرف أو أرقام على الأقل');
   }
 
-  const pHash = await hashPassword(pass);
-  const email = phoneToAuthEmail(phone);
-  const phoneDocRef = doc(db, 'phone_accounts', normPhone);
+  const pHash = await hashPassword(cleanPass);
+  const email = phoneToAuthEmail(normPhone);
 
-  // 1. Check if phone already registered in Firestore
-  try {
-    const existingSnap = await getDoc(phoneDocRef);
-    if (existingSnap.exists()) {
-      const data = existingSnap.data();
-      // If same password provided, seamlessly restore the account!
-      if (data?.passwordHash && data.passwordHash === pHash) {
-        const loginRes = await loginWithPhone(phone, pass);
-        return loginRes.user;
+  // 1. Check if phone is already registered across any candidate format in Firestore
+  for (const cand of candidates) {
+    try {
+      const existingSnap = await getDoc(doc(db, 'phone_accounts', cand));
+      if (existingSnap.exists()) {
+        const data = existingSnap.data();
+        const isMatch = await verifyPasswordMatch(cleanPass, data?.passwordHash || data?.rawPassword);
+        if (isMatch) {
+          // If password matches, seamlessly log the user in!
+          const loginRes = await loginWithPhone(cleanPhone, cleanPass);
+          return loginRes.user;
+        }
+        throw new Error('رقم الهاتف هذا مسجل بالفعل مسبقاً! انتقل لتبويب "استرجاع حسابي" أو تأكد من كلمة المرور');
       }
-      throw new Error('رقم الهاتف هذا مسجل بالفعل مسبقاً! انتقل لتبويب "لدي حساب (استرجاع)" أو تأكد من كلمة المرور');
+    } catch (err: any) {
+      if (err.message && err.message.includes('مسجل بالفعل')) {
+        throw err;
+      }
     }
-  } catch (err: any) {
-    if (err.message && err.message.includes('مسجل بالفعل')) {
-      throw err;
-    }
-    console.warn('Firestore phone check warning:', err);
   }
 
   let finalUid = `usr_${normPhone}`;
 
-  // 2. Try Firebase Auth create user (if Email/Password is enabled in project)
+  // 2. Try creating user in Firebase Auth if available
   try {
-    const result = await createUserWithEmailAndPassword(auth, email, pass);
+    const result = await createUserWithEmailAndPassword(auth, email, cleanPass);
     if (result?.user) {
       finalUid = result.user.uid;
       try {
         await updateProfile(result.user, { displayName: cleanName });
-      } catch (e) {
-        // ignore profile update error
-      }
+      } catch (e) {}
     }
   } catch (authErr: any) {
-    // If operation-not-allowed or admin-only, we gracefully bypass Firebase Auth
-    // and rely on our secure Firestore + device identity registry
-    console.warn('Firebase Auth email/pass not enabled or offline, continuing with cloud profile:', authErr.code || authErr.message);
+    if (authErr.code === 'auth/email-already-in-use') {
+      try {
+        const loginRes = await loginWithPhone(cleanPhone, cleanPass);
+        return loginRes.user;
+      } catch {
+        throw new Error('رقم الهاتف هذا مسجل بالفعل مسبقاً! يرجى تسجيل الدخول أو استرجاع الحساب');
+      }
+    }
+    console.warn('Firebase Auth email/pass offline or bypass:', authErr.code || authErr.message);
   }
 
-  // 3. Store in Firestore phone_accounts collection for multi-device sync and restoration
+  // 3. Store in Firestore phone_accounts collection for multi-device sync
   try {
     await setDoc(
-      phoneDocRef,
+      doc(db, 'phone_accounts', normPhone),
       {
         uid: finalUid,
         name: cleanName,
         phone: normPhone,
-        rawPhone: phone.trim(),
+        rawPhone: cleanPhone,
         passwordHash: pHash,
         registeredAt: new Date().toISOString(),
         lastLoginAt: new Date().toISOString(),
@@ -255,7 +315,7 @@ export async function registerWithPhone(name: string, phone: string, pass: strin
       {
         name: cleanName,
         phone: normPhone,
-        rawPhone: phone.trim(),
+        rawPhone: cleanPhone,
         registeredAt: new Date().toISOString(),
         lastLoginAt: new Date().toISOString(),
         deviceRegistered: true,
@@ -268,7 +328,7 @@ export async function registerWithPhone(name: string, phone: string, pass: strin
 
   // 5. Save device persistence flags in localStorage
   localStorage.setItem('plm_device_registered', '1');
-  localStorage.setItem('plm_registered_phone', phone.trim());
+  localStorage.setItem('plm_registered_phone', cleanPhone);
   localStorage.setItem('plm_name', cleanName);
   localStorage.setItem('plm_user_uid', finalUid);
   localStorage.setItem('plm_onboarded', '1');
@@ -277,104 +337,179 @@ export async function registerWithPhone(name: string, phone: string, pass: strin
     uid: finalUid,
     displayName: cleanName,
     email,
-    phoneNumber: phone.trim(),
+    phoneNumber: cleanPhone,
   };
 
   notifyAuthSubscribers(appUser);
   return appUser;
 }
 
-// Login with Phone Number and Password (e.g. after reinstalling the app)
+// Login with Phone Number and Password (e.g. after reinstalling or on new device)
 export async function loginWithPhone(
   phone: string,
   pass: string
 ): Promise<{ user: AppAuthUser; name: string }> {
-  const normPhone = normalizePhone(phone);
-  if (!normPhone || normPhone.length < 7) {
-    throw new Error('يرجى إدخال رقم هاتف صحيح');
+  const cleanPhone = phone.trim();
+  if (!cleanPhone) {
+    throw new Error('يرجى إدخال رقم الهاتف المسجل به حسابك');
   }
-  if (!pass) {
+  const cleanPass = pass.trim();
+  if (!cleanPass) {
     throw new Error('يرجى إدخال كلمة المرور أو الرمز السري');
   }
 
-  const pHash = await hashPassword(pass);
-  const email = phoneToAuthEmail(phone);
-  let restoredUid = `usr_${normPhone}`;
-  let restoredName = 'مستخدم';
-  let accountFound = false;
-
-  // 1. Try retrieving from Firestore phone_accounts collection
-  try {
-    const phoneDocRef = doc(db, 'phone_accounts', normPhone);
-    const docSnap = await getDoc(phoneDocRef);
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      accountFound = true;
-      if (data?.passwordHash && data.passwordHash !== pHash) {
-        throw new Error('كلمة المرور التي أدخلتها غير صحيحة، يرجى التأكد وإعادة المحاولة');
-      }
-      if (data?.name) restoredName = data.name;
-      if (data?.uid) restoredUid = data.uid;
-
-      // Update lastLoginAt
-      try {
-        await setDoc(phoneDocRef, { lastLoginAt: new Date().toISOString() }, { merge: true });
-      } catch (e) {
-        // ignore update error
-      }
-    }
-  } catch (err: any) {
-    if (err.message && err.message.includes('غير صحيحة')) {
-      throw err;
-    }
-    console.warn('Could not read from Firestore phone_accounts:', err);
+  const candidates = getPhoneCandidates(cleanPhone);
+  if (candidates.length === 0) {
+    throw new Error('يرجى إدخال رقم هاتف صحيح');
   }
 
-  // 2. Try Firebase Auth sign-in if enabled
-  try {
-    const result = await signInWithEmailAndPassword(auth, email, pass);
-    if (result?.user) {
-      accountFound = true;
-      restoredUid = result.user.uid;
-      if (result.user.displayName) restoredName = result.user.displayName;
+  let accountData: any = null;
+  let matchedPhoneKey = candidates[0];
+
+  // 1. Search Firestore phone_accounts collection across all candidate formats
+  for (const cand of candidates) {
+    try {
+      const phoneDocRef = doc(db, 'phone_accounts', cand);
+      const docSnap = await getDoc(phoneDocRef);
+      if (docSnap.exists()) {
+        accountData = docSnap.data();
+        matchedPhoneKey = cand;
+        break;
+      }
+    } catch (err) {
+      console.warn(`Firestore check error for candidate ${cand}:`, err);
     }
-  } catch (fbErr: any) {
-    if (fbErr.code === 'auth/wrong-password') {
-      throw new Error('كلمة المرور غير صحيحة، يرجى التأكد والمحاولة مرة أخرى');
+  }
+
+  // If found in Firestore phone_accounts:
+  if (accountData) {
+    const isPassValid = await verifyPasswordMatch(cleanPass, accountData.passwordHash || accountData.rawPassword);
+    if (!isPassValid) {
+      throw new Error('كلمة المرور غير صحيحة، يرجى التأكد وإعادة المحاولة');
     }
-    // operation-not-allowed is ignored
+
+    const restoredUid = accountData.uid || `usr_${matchedPhoneKey}`;
+    const restoredName = accountData.name || 'مستخدم';
+    const email = phoneToAuthEmail(matchedPhoneKey);
+
+    // Update lastLoginAt
+    try {
+      await setDoc(
+        doc(db, 'phone_accounts', matchedPhoneKey),
+        {
+          lastLoginAt: new Date().toISOString(),
+          deviceInfo: typeof navigator !== 'undefined' ? navigator.userAgent : 'mobile',
+        },
+        { merge: true }
+      );
+    } catch (e) {}
+
+    // Background Firebase Auth sign-in if enabled
+    try {
+      await signInWithEmailAndPassword(auth, email, cleanPass);
+    } catch (authErr) {
+      // Non-blocking
+    }
+
+    // Persist device recognition in localStorage
+    localStorage.setItem('plm_device_registered', '1');
+    localStorage.setItem('plm_registered_phone', cleanPhone);
+    localStorage.setItem('plm_name', restoredName);
+    localStorage.setItem('plm_user_uid', restoredUid);
+    localStorage.setItem('plm_onboarded', '1');
+
+    const appUser: AppAuthUser = {
+      uid: restoredUid,
+      displayName: restoredName,
+      email,
+      phoneNumber: cleanPhone,
+    };
+
+    notifyAuthSubscribers(appUser);
+    return { user: appUser, name: restoredName };
+  }
+
+  // 2. Try Firebase Auth sign-in directly across candidates
+  let authUser: User | null = null;
+  for (const cand of candidates) {
+    const candEmail = phoneToAuthEmail(cand);
+    try {
+      const result = await signInWithEmailAndPassword(auth, candEmail, cleanPass);
+      if (result?.user) {
+        authUser = result.user;
+        matchedPhoneKey = cand;
+        break;
+      }
+    } catch (fbErr: any) {
+      if (
+        fbErr.code === 'auth/wrong-password' ||
+        fbErr.code === 'auth/invalid-credential' ||
+        fbErr.code === 'auth/invalid-login-credentials'
+      ) {
+        throw new Error('كلمة المرور غير صحيحة، يرجى التأكد والمحاولة مرة أخرى');
+      }
+    }
+  }
+
+  if (authUser) {
+    const restoredUid = authUser.uid;
+    const restoredName = authUser.displayName || 'مستخدم';
+    const pHash = await hashPassword(cleanPass);
+
+    // Re-index in Firestore phone_accounts for instant future lookups
+    try {
+      await setDoc(
+        doc(db, 'phone_accounts', matchedPhoneKey),
+        {
+          uid: restoredUid,
+          name: restoredName,
+          phone: matchedPhoneKey,
+          rawPhone: cleanPhone,
+          passwordHash: pHash,
+          lastLoginAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+    } catch (e) {}
+
+    localStorage.setItem('plm_device_registered', '1');
+    localStorage.setItem('plm_registered_phone', cleanPhone);
+    localStorage.setItem('plm_name', restoredName);
+    localStorage.setItem('plm_user_uid', restoredUid);
+    localStorage.setItem('plm_onboarded', '1');
+
+    const appUser: AppAuthUser = {
+      uid: restoredUid,
+      displayName: restoredName,
+      email: authUser.email,
+      phoneNumber: cleanPhone,
+    };
+
+    notifyAuthSubscribers(appUser);
+    return { user: appUser, name: restoredName };
   }
 
   // 3. Fallback: check device local records if phone matches
-  if (!accountFound) {
-    const localPhone = localStorage.getItem('plm_registered_phone');
-    if (localPhone && normalizePhone(localPhone) === normPhone) {
-      accountFound = true;
-      restoredName = localStorage.getItem('plm_name') || 'مستخدم';
-      restoredUid = localStorage.getItem('plm_user_uid') || `usr_${normPhone}`;
-    }
+  const localPhone = localStorage.getItem('plm_registered_phone');
+  if (localPhone && candidates.some((c) => getPhoneCandidates(localPhone).includes(c))) {
+    const restoredName = localStorage.getItem('plm_name') || 'مستخدم';
+    const restoredUid = localStorage.getItem('plm_user_uid') || `usr_${matchedPhoneKey}`;
+
+    localStorage.setItem('plm_device_registered', '1');
+    localStorage.setItem('plm_onboarded', '1');
+
+    const appUser: AppAuthUser = {
+      uid: restoredUid,
+      displayName: restoredName,
+      email: phoneToAuthEmail(matchedPhoneKey),
+      phoneNumber: cleanPhone,
+    };
+
+    notifyAuthSubscribers(appUser);
+    return { user: appUser, name: restoredName };
   }
 
-  if (!accountFound) {
-    throw new Error('لم يتم العثور على حساب مسجل برقم الهاتف هذا. يرجى التأكد من الرقم أو التسجيل لأول مرة.');
-  }
-
-  // Re-save device persistence so this device recognizes the user automatically
-  localStorage.setItem('plm_device_registered', '1');
-  localStorage.setItem('plm_registered_phone', phone.trim());
-  localStorage.setItem('plm_name', restoredName);
-  localStorage.setItem('plm_user_uid', restoredUid);
-  localStorage.setItem('plm_onboarded', '1');
-
-  const appUser: AppAuthUser = {
-    uid: restoredUid,
-    displayName: restoredName,
-    email,
-    phoneNumber: phone.trim(),
-  };
-
-  notifyAuthSubscribers(appUser);
-  return { user: appUser, name: restoredName };
+  throw new Error('لم يتم العثور على حساب مسجل برقم الهاتف هذا. يرجى التأكد من الرقم أو التسجيل لأول مرة.');
 }
 
 // Check if current device is registered
@@ -409,24 +544,39 @@ export async function loginWithGoogle(): Promise<AppAuthUser> {
   return appUser;
 }
 
-// Sign in with Email/Password
-export async function loginWithEmail(email: string, pass: string): Promise<AppAuthUser> {
-  const cleanEmail = email.trim();
+// Sign in with Email or Phone / Password
+export async function loginWithEmail(emailOrPhone: string, pass: string): Promise<AppAuthUser> {
+  const rawInput = emailOrPhone.trim();
+  const cleanPass = pass.trim();
+
+  // If user entered a phone number or numeric pattern, seamlessly route to loginWithPhone
+  if (!rawInput.includes('@') || /^[+0-9\s\-]+$/.test(rawInput)) {
+    const res = await loginWithPhone(rawInput, cleanPass);
+    return res.user;
+  }
+
+  const cleanEmail = rawInput.toLowerCase();
   let displayName = cleanEmail.split('@')[0] || 'مستخدم';
   let uid = `usr_email_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '_')}`;
 
   try {
-    const result = await signInWithEmailAndPassword(auth, cleanEmail, pass);
+    const result = await signInWithEmailAndPassword(auth, cleanEmail, cleanPass);
     if (result.user) {
       uid = result.user.uid;
       displayName = result.user.displayName || displayName;
     }
   } catch (err: any) {
-    if (err.code === 'auth/wrong-password') {
-      throw new Error('كلمة المرور غير صحيحة');
+    if (
+      err.code === 'auth/wrong-password' ||
+      err.code === 'auth/invalid-credential' ||
+      err.code === 'auth/invalid-login-credentials'
+    ) {
+      throw new Error('كلمة المرور غير صحيحة، يرجى التأكد وإعادة المحاولة');
     }
-    // Fallback using stored email or cloud account
-    console.warn('Email auth bypass/fallback:', err.code || err.message);
+    if (err.code === 'auth/user-not-found') {
+      throw new Error('لم يتم العثور على حساب مسجل بهذا البريد الإلكتروني. يرجى التأكد أو إنشاء حساب جديد.');
+    }
+    throw new Error(err.message || 'تعذر تسجيل الدخول بالبريد الإلكتروني');
   }
 
   localStorage.setItem('plm_device_registered', '1');

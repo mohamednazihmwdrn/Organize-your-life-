@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import {
   loginWithEmail,
   registerWithEmail,
+  loginWithPhone,
+  registerWithPhone,
   loginWithGoogle,
   resetPassword,
   phoneToAuthEmail,
+  normalizePhone,
 } from '../lib/firebase';
 import { migrateLocalDataToCloud } from '../lib/db';
 
@@ -90,24 +93,38 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     if (mode === 'register') {
       const cleanName = name.trim();
       if (!cleanName) {
-        return onShowToast('يرجى إدخال اسمك الكامل أو اسم العائلة', 'error');
+        return onShowToast('يرجى إدخال اسمك الكريم', 'error');
       }
       if (password !== confirmPassword) {
-        return onShowToast('كلمتا المرور غير متطابقتين', 'error');
+        return onShowToast('كلمتا المرور غير متطابقتين، يرجى إعادة التأكيد', 'error');
       }
 
       setLoading(true);
       try {
-        const user = await registerWithEmail(cleanName, cleanEmail, password);
-        await migrateLocalDataToCloud(user.uid);
-        onShowToast(`تم إنشاء حسابك وتوثيق هذا الجهاز بنجاح! مرحباً بك 🎉 ${cleanName}`, 'success');
-        onSuccess(cleanName, cleanEmail);
+        const isPhone = !rawInput.includes('@') || /^[+0-9\s\-()]+$/.test(rawInput);
+        let finalName = cleanName;
+        let finalIdentifier = rawInput;
+
+        if (isPhone) {
+          const user = await registerWithPhone(cleanName, rawInput, password);
+          await migrateLocalDataToCloud(user.uid).catch(() => {});
+          finalName = user.displayName || cleanName;
+          finalIdentifier = user.phoneNumber || rawInput;
+        } else {
+          const user = await registerWithEmail(cleanName, cleanEmail, password);
+          await migrateLocalDataToCloud(user.uid).catch(() => {});
+          finalName = user.displayName || cleanName;
+          finalIdentifier = user.email || cleanEmail;
+        }
+
+        onShowToast(`تم إنشاء حسابك وتوثيق جهازك بنجاح! مرحباً بك 🎉 ${finalName}`, 'success');
+        onSuccess(finalName, finalIdentifier);
         onClose();
       } catch (err: any) {
         console.error(err);
-        let msg = 'تعذر إنشاء الحساب';
+        let msg = err.message || 'تعذر إنشاء الحساب، يرجى التحقق من البيانات والمحاولة ثانية.';
         if (err.code === 'auth/email-already-in-use') {
-          msg = 'هذا الرقم أو البريد مسجل مسبقاً. يمكنك تسجيل الدخول به.';
+          msg = 'هذا الرقم أو البريد مسجل مسبقاً. يرجى تسجيل الدخول أو استرجاع الحساب.';
         } else if (err.code === 'auth/invalid-email') {
           msg = 'صيغة البريد الإلكتروني أو رقم الهاتف غير صالحة';
         }
@@ -119,21 +136,35 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       // Login mode
       setLoading(true);
       try {
-        const user = await loginWithEmail(cleanEmail, password);
-        const displayName = user.displayName || user.email?.split('@')[0] || 'عميل';
-        await migrateLocalDataToCloud(user.uid);
+        const isPhone = !rawInput.includes('@') || /^[+0-9\s\-()]+$/.test(rawInput);
+        let displayName = 'مستخدم';
+        let identifier = rawInput;
+
+        if (isPhone) {
+          const { user, name: restoredName } = await loginWithPhone(rawInput, password);
+          await migrateLocalDataToCloud(user.uid).catch(() => {});
+          displayName = restoredName;
+          identifier = user.phoneNumber || rawInput;
+        } else {
+          const user = await loginWithEmail(cleanEmail, password);
+          await migrateLocalDataToCloud(user.uid).catch(() => {});
+          displayName = user.displayName || user.email?.split('@')[0] || 'مستخدم';
+          identifier = user.email || cleanEmail;
+        }
+
         onShowToast(`تم تسجيل الدخول وتوثيق الجهاز بنجاح! مرحباً بك 👋 ${displayName}`, 'success');
-        onSuccess(displayName, user.email || '');
+        onSuccess(displayName, identifier);
         onClose();
       } catch (err: any) {
         console.error(err);
-        let msg = 'رقم الهاتف/البريد الإلكتروني أو كلمة المرور التي أدخلتها غير صحيحة';
+        let msg = err.message || 'بيانات تسجيل الدخول غير صحيحة. يرجى التحقق وإعادة المحاولة.';
         if (
           err.code === 'auth/user-not-found' ||
           err.code === 'auth/wrong-password' ||
-          err.code === 'auth/invalid-credential'
+          err.code === 'auth/invalid-credential' ||
+          err.code === 'auth/invalid-login-credentials'
         ) {
-          msg = 'بيانات تسجيل الدخول غير صحيحة. يرجى التحقق من الرقم وكلمة المرور وإعادة المحاولة.';
+          msg = 'بيانات تسجيل الدخول غير صحيحة. يرجى التأكد من الرقم/البريد وكلمة المرور.';
         }
         onShowToast(msg, 'error');
       } finally {

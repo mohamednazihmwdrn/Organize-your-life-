@@ -61,7 +61,7 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
     try {
       const user = await registerWithPhone(cleanName, phone, password);
       // Migrate any pending local records to their new cloud account
-      await migrateLocalDataToCloud(user.uid);
+      await migrateLocalDataToCloud(user.uid).catch((e) => console.warn(e));
 
       onShowToast(`تم تسجيلك بنجاح وتوثيق جهازك 🎉 أهلاً بك يا ${cleanName}`, 'success');
       onSuccess(cleanName, phone.trim());
@@ -97,22 +97,13 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
     try {
       const { user, name: restoredName } = await loginWithPhone(phone, password);
       // Migrate local data into restored account
-      await migrateLocalDataToCloud(user.uid);
+      await migrateLocalDataToCloud(user.uid).catch((e) => console.warn(e));
 
       onShowToast(`تم التعرف على جهازك واسترجاع حسابك بنجاح! مرحباً بعودتك يا ${restoredName} 👋`, 'success');
       onSuccess(restoredName, phone.trim());
     } catch (err: any) {
       console.error(err);
-      if (
-        err.code === 'auth/user-not-found' ||
-        err.code === 'auth/wrong-password' ||
-        err.code === 'auth/invalid-credential' ||
-        (err.message && err.message.includes('غير صحيحة'))
-      ) {
-        setErrorNotice(err.message || 'بيانات الدخول غير صحيحة! تأكد من رقم الهاتف المسجل وكلمة المرور.');
-      } else {
-        setErrorNotice(err.message || 'تعذر الدخول، يرجى التحقق من اتصال الإنترنت وإعادة المحاولة.');
-      }
+      setErrorNotice(err.message || 'بيانات الدخول غير صحيحة! تأكد من رقم الهاتف المسجل وكلمة المرور.');
     } finally {
       setLoading(false);
     }

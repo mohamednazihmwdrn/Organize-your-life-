@@ -200,23 +200,39 @@ export async function dbClear(storeName: string): Promise<void> {
 
 // Migrate any existing local guest IndexedDB data to newly logged in user account
 export async function migrateLocalDataToCloud(userId: string): Promise<void> {
-  const idb = await openIndexedDB();
-  for (const storeName of STORES) {
-    const localItems = await new Promise<any[]>((res) => {
-      const tx = idb.transaction(storeName, 'readonly');
-      const req = tx.objectStore(storeName).getAll();
-      req.onsuccess = () => res(req.result || []);
-      req.onerror = () => res([]);
-    });
+  try {
+    const idb = await openIndexedDB();
+    for (const storeName of STORES) {
+      try {
+        const localItems = await new Promise<any[]>((res) => {
+          try {
+            const tx = idb.transaction(storeName, 'readonly');
+            const req = tx.objectStore(storeName).getAll();
+            req.onsuccess = () => res(req.result || []);
+            req.onerror = () => res([]);
+          } catch {
+            res([]);
+          }
+        });
 
-    if (localItems.length > 0) {
-      for (const item of localItems) {
-        if (item.id) {
-          const docRef = doc(db, 'users', userId, storeName, item.id);
-          await setDoc(docRef, JSON.parse(JSON.stringify(item)), { merge: true });
+        if (localItems.length > 0) {
+          for (const item of localItems) {
+            if (item && item.id) {
+              try {
+                const docRef = doc(db, 'users', userId, storeName, item.id);
+                await setDoc(docRef, JSON.parse(JSON.stringify(item)), { merge: true });
+              } catch (itemErr) {
+                console.warn(`Could not sync item ${item.id} in ${storeName}:`, itemErr);
+              }
+            }
+          }
         }
+      } catch (storeErr) {
+        console.warn(`Could not process store ${storeName} for migration:`, storeErr);
       }
     }
+  } catch (err) {
+    console.warn('migrateLocalDataToCloud overall warning:', err);
   }
 }
 
