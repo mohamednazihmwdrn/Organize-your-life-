@@ -7,6 +7,7 @@ import {
   normalizePhone,
 } from '../lib/firebase';
 import { migrateLocalDataToCloud } from '../lib/db';
+import { safeStorage } from '../lib/storage';
 
 interface RegistrationGateModalProps {
   show: boolean;
@@ -40,10 +41,10 @@ export const RegistrationGateModal: React.FC<RegistrationGateModalProps> = ({
   const handleQuickEntry = () => {
     const cleanName = name.trim() || 'صاحب الجهاز';
     const tempUid = `usr_fast_${Date.now()}`;
-    localStorage.setItem('plm_device_registered', '1');
-    localStorage.setItem('plm_name', cleanName);
-    localStorage.setItem('plm_user_uid', tempUid);
-    localStorage.setItem('plm_onboarded', '1');
+    safeStorage.setItem('plm_device_registered', '1');
+    safeStorage.setItem('plm_name', cleanName);
+    safeStorage.setItem('plm_user_uid', tempUid);
+    safeStorage.setItem('plm_onboarded', '1');
 
     onShowToast(`مرحباً بك 👋 تم فتح التطبيق بنجاح ويمكنك مزامنة بياناتك لاحقاً`, 'success');
     onSuccess(cleanName, 'local_device');

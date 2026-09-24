@@ -32,14 +32,30 @@ import {
 import firebaseConfig from '../../firebase-applet-config.json';
 
 // Initialize Firebase App
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+let app: any;
+try {
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+} catch (e) {
+  console.warn('Firebase initializeApp error:', e);
+  try {
+    app = getApp();
+  } catch {
+    app = initializeApp(firebaseConfig);
+  }
+}
 
 // Initialize Auth
-export const auth = getAuth(app);
+let auth: any;
+try {
+  auth = getAuth(app);
+} catch (e) {
+  console.warn('Firebase getAuth error:', e);
+}
+export { auth };
 export const googleProvider = new GoogleAuthProvider();
 
 // Initialize Firestore with robust multi-tab offline persistence
-const firestoreDbId = (firebaseConfig as any).firestoreDatabaseId;
+const firestoreDbId = (firebaseConfig as any)?.firestoreDatabaseId;
 let db: Firestore;
 try {
   db = initializeFirestore(
@@ -52,7 +68,11 @@ try {
     firestoreDbId
   );
 } catch (e) {
-  db = firestoreDbId ? getFirestore(app, firestoreDbId) : getFirestore(app);
+  try {
+    db = firestoreDbId ? getFirestore(app, firestoreDbId) : getFirestore(app);
+  } catch {
+    db = getFirestore(app);
+  }
 }
 
 export { db };

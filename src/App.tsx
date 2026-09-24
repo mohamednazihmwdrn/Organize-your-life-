@@ -88,23 +88,25 @@ const incomeCats = [
   'أخرى',
 ];
 
+import { safeStorage } from './lib/storage';
+
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageId>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userName, setUserName] = useState<string>(
-    localStorage.getItem('plm_name') || 'مستخدم'
+    safeStorage.getItem('plm_name') || 'مستخدم'
   );
   const [userPhone, setUserPhone] = useState<string>(
-    localStorage.getItem('plm_registered_phone') || ''
+    safeStorage.getItem('plm_registered_phone') || ''
   );
   const [isDeviceRegistered, setIsDeviceRegistered] = useState<boolean>(
-    localStorage.getItem('plm_device_registered') === '1'
+    safeStorage.getItem('plm_device_registered') === '1'
   );
   const [theme, setTheme] = useState<string>(
-    localStorage.getItem('plm_theme') || 'light'
+    safeStorage.getItem('plm_theme') || 'light'
   );
   const [showOnboarding, setShowOnboarding] = useState<boolean>(
-    localStorage.getItem('plm_onboarded') !== '1'
+    safeStorage.getItem('plm_onboarded') !== '1'
   );
   const [showPinOverlay, setShowPinOverlay] = useState<boolean>(false);
   const [commercialConfig, setCommercialConfigState] = useState<CommercialConfig>(
