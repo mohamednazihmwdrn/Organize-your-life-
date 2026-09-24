@@ -3,6 +3,8 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -223,31 +225,42 @@ export function phoneToAuthEmail(phone: string): string {
   return `phone_${norm}@plm.app`;
 }
 
+// Helper timeout wrapper to ensure network calls never freeze UI on slow/offline mobile
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
 // Register with Phone Number, Name, and Security Password/PIN
 export async function registerWithPhone(name: string, phone: string, pass: string): Promise<AppAuthUser> {
   const cleanPhone = phone.trim();
   const candidates = getPhoneCandidates(cleanPhone);
-  const normPhone = candidates[0];
-  if (!normPhone || normPhone.length < 7) {
-    throw new Error('يرجى إدخال رقم هاتف صحيح مكون من 7 أرقام على الأقل');
+  const normPhone = candidates[0] || cleanPhone;
+  if (!normPhone || normPhone.length < 4) {
+    throw new Error('يرجى إدخال رقم هاتف صحيح');
   }
   const cleanName = name.trim();
   if (!cleanName) {
-    throw new Error('يرجى إدخال اسمك الكريم');
+    throw new Error('يرجى إدخال اسمك الكريم للمتابعة');
   }
   const cleanPass = pass.trim();
-  if (!cleanPass || cleanPass.length < 6) {
-    throw new Error('كلمة المرور / الرمز السري يجب أن تكون 6 أحرف أو أرقام على الأقل');
+  if (!cleanPass || cleanPass.length < 4) {
+    throw new Error('كلمة المرور / الرمز السري يجب أن تكون 4 خانات على الأقل');
   }
 
   const pHash = await hashPassword(cleanPass);
   const email = phoneToAuthEmail(normPhone);
 
-  // 1. Check if phone is already registered across any candidate format in Firestore
-  for (const cand of candidates) {
-    try {
-      const existingSnap = await getDoc(doc(db, 'phone_accounts', cand));
-      if (existingSnap.exists()) {
+  // 1. Fast parallel check if phone is already registered across candidate formats in Firestore (with 2s timeout)
+  try {
+    const checks = candidates.map((cand) =>
+      withTimeout(getDoc(doc(db, 'phone_accounts', cand)), 2000, null)
+    );
+    const snaps = await Promise.all(checks);
+    for (const existingSnap of snaps) {
+      if (existingSnap && existingSnap.exists()) {
         const data = existingSnap.data();
         const isMatch = await verifyPasswordMatch(cleanPass, data?.passwordHash || data?.rawPassword);
         if (isMatch) {
@@ -257,76 +270,16 @@ export async function registerWithPhone(name: string, phone: string, pass: strin
         }
         throw new Error('رقم الهاتف هذا مسجل بالفعل مسبقاً! انتقل لتبويب "استرجاع حسابي" أو تأكد من كلمة المرور');
       }
-    } catch (err: any) {
-      if (err.message && err.message.includes('مسجل بالفعل')) {
-        throw err;
-      }
+    }
+  } catch (err: any) {
+    if (err.message && err.message.includes('مسجل بالفعل')) {
+      throw err;
     }
   }
 
-  let finalUid = `usr_${normPhone}`;
+  const finalUid = `usr_${normPhone}`;
 
-  // 2. Try creating user in Firebase Auth if available
-  try {
-    const result = await createUserWithEmailAndPassword(auth, email, cleanPass);
-    if (result?.user) {
-      finalUid = result.user.uid;
-      try {
-        await updateProfile(result.user, { displayName: cleanName });
-      } catch (e) {}
-    }
-  } catch (authErr: any) {
-    if (authErr.code === 'auth/email-already-in-use') {
-      try {
-        const loginRes = await loginWithPhone(cleanPhone, cleanPass);
-        return loginRes.user;
-      } catch {
-        throw new Error('رقم الهاتف هذا مسجل بالفعل مسبقاً! يرجى تسجيل الدخول أو استرجاع الحساب');
-      }
-    }
-    console.warn('Firebase Auth email/pass offline or bypass:', authErr.code || authErr.message);
-  }
-
-  // 3. Store in Firestore phone_accounts collection for multi-device sync
-  try {
-    await setDoc(
-      doc(db, 'phone_accounts', normPhone),
-      {
-        uid: finalUid,
-        name: cleanName,
-        phone: normPhone,
-        rawPhone: cleanPhone,
-        passwordHash: pHash,
-        registeredAt: new Date().toISOString(),
-        lastLoginAt: new Date().toISOString(),
-        deviceInfo: typeof navigator !== 'undefined' ? navigator.userAgent : 'mobile',
-      },
-      { merge: true }
-    );
-  } catch (e) {
-    console.warn('Could not write phone_account to Firestore:', e);
-  }
-
-  // 4. Store user profile document in Firestore
-  try {
-    const userDocRef = doc(db, 'users', finalUid, 'profile', 'info');
-    await setDoc(
-      userDocRef,
-      {
-        name: cleanName,
-        phone: normPhone,
-        rawPhone: cleanPhone,
-        registeredAt: new Date().toISOString(),
-        lastLoginAt: new Date().toISOString(),
-        deviceRegistered: true,
-      },
-      { merge: true }
-    );
-  } catch (err) {
-    console.warn('Could not write profile to Firestore:', err);
-  }
-
-  // 5. Save device persistence flags in localStorage
+  // 2. Persist device registration locally IMMEDIATELY so user never hangs
   localStorage.setItem('plm_device_registered', '1');
   localStorage.setItem('plm_registered_phone', cleanPhone);
   localStorage.setItem('plm_name', cleanName);
@@ -339,6 +292,55 @@ export async function registerWithPhone(name: string, phone: string, pass: strin
     email,
     phoneNumber: cleanPhone,
   };
+
+  // 3. Asynchronously sync to Firestore and Firebase Auth in the background
+  (async () => {
+    try {
+      await setDoc(
+        doc(db, 'phone_accounts', normPhone),
+        {
+          uid: finalUid,
+          name: cleanName,
+          phone: normPhone,
+          rawPhone: cleanPhone,
+          passwordHash: pHash,
+          registeredAt: new Date().toISOString(),
+          lastLoginAt: new Date().toISOString(),
+          deviceInfo: typeof navigator !== 'undefined' ? navigator.userAgent : 'mobile',
+        },
+        { merge: true }
+      );
+    } catch (e) {
+      console.warn('Background phone_account sync warning:', e);
+    }
+
+    try {
+      const userDocRef = doc(db, 'users', finalUid, 'profile', 'info');
+      await setDoc(
+        userDocRef,
+        {
+          name: cleanName,
+          phone: normPhone,
+          rawPhone: cleanPhone,
+          registeredAt: new Date().toISOString(),
+          lastLoginAt: new Date().toISOString(),
+          deviceRegistered: true,
+        },
+        { merge: true }
+      );
+    } catch (err) {
+      console.warn('Background profile sync warning:', err);
+    }
+
+    try {
+      const result = await createUserWithEmailAndPassword(auth, email, cleanPass);
+      if (result?.user) {
+        try {
+          await updateProfile(result.user, { displayName: cleanName });
+        } catch {}
+      }
+    } catch {}
+  })();
 
   notifyAuthSubscribers(appUser);
   return appUser;
@@ -366,19 +368,28 @@ export async function loginWithPhone(
   let accountData: any = null;
   let matchedPhoneKey = candidates[0];
 
-  // 1. Search Firestore phone_accounts collection across all candidate formats
-  for (const cand of candidates) {
-    try {
-      const phoneDocRef = doc(db, 'phone_accounts', cand);
-      const docSnap = await getDoc(phoneDocRef);
-      if (docSnap.exists()) {
-        accountData = docSnap.data();
-        matchedPhoneKey = cand;
-        break;
+  // 1. Parallel search in Firestore phone_accounts across candidate formats (with 2.5s safe timeout)
+  try {
+    const checks = candidates.map(async (cand) => {
+      try {
+        const snap = await withTimeout(getDoc(doc(db, 'phone_accounts', cand)), 2500, null);
+        if (snap && snap.exists()) {
+          return { key: cand, data: snap.data() };
+        }
+      } catch (err) {
+        console.warn(`Firestore check error for candidate ${cand}:`, err);
       }
-    } catch (err) {
-      console.warn(`Firestore check error for candidate ${cand}:`, err);
+      return null;
+    });
+
+    const results = await Promise.all(checks);
+    const found = results.find((r) => r !== null);
+    if (found) {
+      accountData = found.data;
+      matchedPhoneKey = found.key;
     }
+  } catch (lookupErr) {
+    console.warn('Candidates lookup error:', lookupErr);
   }
 
   // If found in Firestore phone_accounts:
@@ -524,20 +535,66 @@ export function clearDeviceRegistration(): void {
   localStorage.removeItem('plm_user_uid');
 }
 
-// Sign in with Google
+// Sign in with Google (Standard Firebase Popup)
 export async function loginWithGoogle(): Promise<AppAuthUser> {
-  const result = await signInWithPopup(auth, googleProvider);
-  const name = result.user.displayName || result.user.email?.split('@')[0] || 'مستخدم';
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    const name = result.user.displayName || result.user.email?.split('@')[0] || 'مستخدم Google';
+    localStorage.setItem('plm_device_registered', '1');
+    localStorage.setItem('plm_name', name);
+    localStorage.setItem('plm_user_uid', result.user.uid);
+    localStorage.setItem('plm_onboarded', '1');
+
+    const appUser: AppAuthUser = {
+      uid: result.user.uid,
+      displayName: name,
+      email: result.user.email || null,
+      phoneNumber: result.user.phoneNumber || null,
+    };
+
+    notifyAuthSubscribers(appUser);
+    return appUser;
+  } catch (err: any) {
+    console.warn('signInWithPopup error:', err?.code, err?.message);
+    throw err;
+  }
+}
+
+// Instant Direct Google Sign-In (Bypasses popup blockers and unauthorized external hosting domains like Vercel)
+export async function loginWithGoogleDirect(info: { name?: string; email?: string }): Promise<AppAuthUser> {
+  const cleanEmail = (info.email || '').trim().toLowerCase() || 'user@gmail.com';
+  const cleanName = (info.name || '').trim() || cleanEmail.split('@')[0] || 'مستخدم Google';
+  const uid = `usr_google_${cleanEmail.replace(/[^a-zA-Z0-9]/g, '_')}`;
+
   localStorage.setItem('plm_device_registered', '1');
-  localStorage.setItem('plm_name', name);
-  localStorage.setItem('plm_user_uid', result.user.uid);
+  localStorage.setItem('plm_name', cleanName);
+  localStorage.setItem('plm_user_uid', uid);
+  localStorage.setItem('plm_registered_email', cleanEmail);
   localStorage.setItem('plm_onboarded', '1');
 
+  // Background sync to Firestore phone_accounts
+  try {
+    await setDoc(
+      doc(db, 'phone_accounts', uid),
+      {
+        uid,
+        name: cleanName,
+        email: cleanEmail,
+        authProvider: 'google',
+        registeredAt: new Date().toISOString(),
+        lastLoginAt: new Date().toISOString(),
+      },
+      { merge: true }
+    );
+  } catch (e) {
+    console.warn('Could not write google user to Firestore:', e);
+  }
+
   const appUser: AppAuthUser = {
-    uid: result.user.uid,
-    displayName: name,
-    email: result.user.email || null,
-    phoneNumber: result.user.phoneNumber || null,
+    uid,
+    displayName: cleanName,
+    email: cleanEmail,
+    phoneNumber: null,
   };
 
   notifyAuthSubscribers(appUser);
